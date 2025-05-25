@@ -1,8 +1,10 @@
 use crate::utils::{run_cmd, wait_for_docker_ready};
 use std::env::consts::OS;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub fn run(volumes: bool) {
-    println!("🧹 Cleaning system junk...");
+    println!("Docker cleaning...");
 
     let containers_cmd = run_cmd("sh", &["-c", "docker rm -f $(docker ps -aq)"]);
     match containers_cmd {
@@ -32,12 +34,12 @@ pub fn run(volumes: bool) {
 
     if OS == "macos" {
         println!("🔄 Restarting Docker before buildx prune...");
-        let quit = run_cmd("osascript", &["-e", "quit app \"Docker\""]);
+        let quit = run_cmd("pkill", &["-f", "Docker Desktop"]);
         match quit {
             Ok(_) => println!("✅ Docker quit successfully."),
             Err(_) => println!("⚠️ Failed to quit Docker. You might need to restart manually."),
         }
-
+        sleep(Duration::from_secs(3));
         let start = run_cmd("open", &["-a", "Docker"]);
         match start {
             Ok(_) => println!("✅ Docker started successfully."),
