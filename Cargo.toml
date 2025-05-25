@@ -1,0 +1,24 @@
+[package]
+name = "deepwash"
+version = "0.1.0"
+edition = "2024"
+description = """A Command Line Interface to clean your machine (docker...)"""
+authors = ["Charles Gauthereau <charles.gauthereau@soluce-technologies.com>"]
+license = "MIT"
+keywords = ["cleaner", "docker", "linux", "macos"]
+categories = ["command-line-utilities"]
+readme = "README.md"
+repository = "https://github.com/Soluce-Technologies/deepwash.git"
+homepage = "https://github.com/Soluce-Technologies/deepwash"
+
+
+[[bin]]
+name = "deepwash"
+path = "src/main.rs"
+
+[lib]
+name = "deepwash"
+path = "src/lib.rs"
+
+[dependencies]
+clap = { version = "4.5.38", features = ["derive"] }
