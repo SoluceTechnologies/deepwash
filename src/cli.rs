@@ -6,7 +6,6 @@ use clap::{Parser, Subcommand};
     version = env!("CARGO_PKG_VERSION"),
     about = "Rust-based CLI cleaner"
 )]
-
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,

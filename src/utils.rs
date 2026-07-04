@@ -72,7 +72,7 @@ pub fn wait_for_docker_ready(timeout_secs: u64) -> bool {
     let mut waited = 0;
     let interval = 2;
     while waited < timeout_secs {
-        if let Ok(_) = run_cmd("docker", &["info"]) {
+        if run_cmd("docker", &["info"]).is_ok() {
             return true;
         }
         sleep(Duration::from_secs(interval));
