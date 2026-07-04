@@ -1,2 +1,5 @@
 /target
 .idea
+.claude
+.codex
+/docs
