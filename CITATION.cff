@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: If you use Deepwash, please cite it using the metadata from this file.
 title: Deepwash
-version: 1.1.3
+version: 1.2.0
 type: software
 abstract: >-
   A Command Line Interface to clean your machine, including Docker-related
