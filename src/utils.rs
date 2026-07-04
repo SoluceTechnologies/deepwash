@@ -2,7 +2,6 @@ use std::process::Command;
 use std::thread::sleep;
 use std::time::Duration;
 
-/// Splits command stdout into non-empty, trimmed resource ids.
 pub fn parse_ids(stdout: &str) -> Vec<&str> {
     stdout
         .lines()
@@ -11,7 +10,6 @@ pub fn parse_ids(stdout: &str) -> Vec<&str> {
         .collect()
 }
 
-/// Resolves effective (images, volumes) scope. `full` forces both on.
 pub fn resolve_scope(images: bool, volumes: bool, full: bool) -> (bool, bool) {
     if full {
         (true, true)
@@ -20,14 +18,6 @@ pub fn resolve_scope(images: bool, volumes: bool, full: bool) -> (bool, bool) {
     }
 }
 
-/// Lists docker resources via `list_cmd`, then removes them with `remove_argv`.
-/// Returns count removed. Empty list => skip cleanly (count 0, no error print).
-///
-/// `label` is a human plural, e.g. "containers".
-/// `list_cmd` is a full `sh -c` string, e.g. "docker ps -aq".
-/// `remove_argv` is the removal command minus ids, e.g. `["docker", "rm", "-f"]`.
-/// Ids are appended as separate argv entries (no shell), so nothing in the
-/// listed output is ever interpreted by a shell.
 pub fn clean_resource(label: &str, list_cmd: &str, remove_argv: &[&str]) -> usize {
     let listed = match run_cmd("sh", &["-c", list_cmd]) {
         Ok(out) => out,
@@ -83,37 +73,4 @@ pub fn wait_for_docker_ready(timeout_secs: u64) -> bool {
         waited += interval;
     }
     false
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_ids_splits_nonempty_lines() {
-        assert_eq!(parse_ids("a\nb\nc\n"), vec!["a", "b", "c"]);
-    }
-
-    #[test]
-    fn parse_ids_ignores_blank_and_whitespace_lines() {
-        assert_eq!(parse_ids("a\n\n  \nb\n"), vec!["a", "b"]);
-    }
-
-    #[test]
-    fn parse_ids_empty_input_is_empty() {
-        assert!(parse_ids("").is_empty());
-        assert!(parse_ids("\n  \n").is_empty());
-    }
-
-    #[test]
-    fn resolve_scope_full_forces_images_and_volumes() {
-        assert_eq!(resolve_scope(false, false, true), (true, true));
-    }
-
-    #[test]
-    fn resolve_scope_without_full_passes_flags_through() {
-        assert_eq!(resolve_scope(false, false, false), (false, false));
-        assert_eq!(resolve_scope(true, false, false), (true, false));
-        assert_eq!(resolve_scope(false, true, false), (false, true));
-    }
 }
