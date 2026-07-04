@@ -3,7 +3,6 @@ use std::env::consts::OS;
 use std::thread::sleep;
 use std::time::Duration;
 
-/// Heavy cleanup: system prune -a, plus macOS Docker restart + buildx cache.
 pub fn clean() {
     match run_cmd("sh", &["-c", "docker system prune -a -f"]) {
         Ok(out) => println!("✅ System prune done:\n{}", out.trim()),

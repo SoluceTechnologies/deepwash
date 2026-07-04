@@ -1,7 +1,3 @@
-//! Integration tests for the pure cleaning helpers exposed by the `deepwash`
-//! library crate. Shell-driven helpers (`clean_resource`, task `clean` fns)
-//! require a live Docker daemon and are covered by manual smoke testing.
-
 use deepwash::utils::{parse_ids, resolve_scope};
 
 #[test]
