@@ -11,7 +11,7 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Docker { volumes }) => docker::run(volumes),
+        Some(Commands::Docker { images, volumes, full }) => docker::run(images, volumes, full),
         None => {
             Cli::command()
                 .print_help()
