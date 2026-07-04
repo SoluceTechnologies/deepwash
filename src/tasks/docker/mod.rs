@@ -10,11 +10,11 @@ use crate::utils::resolve_scope;
 /// plus heavy steps (system prune -a, macOS Docker restart, buildx cache).
 pub fn run(images: bool, volumes: bool, full: bool) {
     println!("🧽 Docker cleaning...");
-    let (images, volumes) = resolve_scope(images, volumes, full);
+    let (remove_images, remove_volumes) = resolve_scope(images, volumes, full);
 
     let c = containers::clean();
-    let i = if images { images::clean() } else { 0 };
-    let v = if volumes { volumes::clean() } else { 0 };
+    let i = if remove_images { images::clean() } else { 0 };
+    let v = if remove_volumes { volumes::clean() } else { 0 };
 
     if full {
         full::clean();

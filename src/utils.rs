@@ -20,13 +20,15 @@ pub fn resolve_scope(images: bool, volumes: bool, full: bool) -> (bool, bool) {
     }
 }
 
-/// Lists docker resources via `list_cmd`, then removes them with `remove_prefix`.
+/// Lists docker resources via `list_cmd`, then removes them with `remove_argv`.
 /// Returns count removed. Empty list => skip cleanly (count 0, no error print).
 ///
 /// `label` is a human plural, e.g. "containers".
 /// `list_cmd` is a full `sh -c` string, e.g. "docker ps -aq".
-/// `remove_prefix` is the removal command minus ids, e.g. "docker rm -f".
-pub fn clean_resource(label: &str, list_cmd: &str, remove_prefix: &str) -> usize {
+/// `remove_argv` is the removal command minus ids, e.g. `["docker", "rm", "-f"]`.
+/// Ids are appended as separate argv entries (no shell), so nothing in the
+/// listed output is ever interpreted by a shell.
+pub fn clean_resource(label: &str, list_cmd: &str, remove_argv: &[&str]) -> usize {
     let listed = match run_cmd("sh", &["-c", list_cmd]) {
         Ok(out) => out,
         Err(e) => {
@@ -41,8 +43,10 @@ pub fn clean_resource(label: &str, list_cmd: &str, remove_prefix: &str) -> usize
         return 0;
     }
 
-    let remove_cmd = format!("{} {}", remove_prefix, ids.join(" "));
-    match run_cmd("sh", &["-c", &remove_cmd]) {
+    let (cmd, prefix) = remove_argv.split_first().expect("remove_argv is non-empty");
+    let mut args: Vec<&str> = prefix.to_vec();
+    args.extend_from_slice(&ids);
+    match run_cmd(cmd, &args) {
         Ok(_) => {
             println!("✅ Removed {} {}", ids.len(), label);
             ids.len()
