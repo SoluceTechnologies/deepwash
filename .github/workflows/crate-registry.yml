@@ -1,0 +1,72 @@
+name: Publish to crates.io
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version being published (e.g. 0.2.0)"
+        required: true
+        type: string
+      ref:
+        description: "Git ref (tag) to checkout and publish from"
+        required: true
+        type: string
+      add_latest:
+        description: "Whether newest published version is the latest release"
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      CARGO_REGISTRY_TOKEN:
+        description: "crates.io API token"
+        required: true
+
+jobs:
+  publish:
+    name: Build & publish crate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ inputs.ref }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify Cargo.toml version matches ${{ inputs.version }}
+        run: |
+          MANIFEST_VERSION=$(cargo metadata --no-deps --format-version 1 \
+            | python3 -c "import sys, json; print(json.load(sys.stdin)['packages'][0]['version'])")
+          echo "Manifest version: $MANIFEST_VERSION"
+          echo "Expected version: ${{ inputs.version }}"
+          if [ "$MANIFEST_VERSION" != "${{ inputs.version }}" ]; then
+            echo "::error::Cargo.toml version ($MANIFEST_VERSION) does not match release version (${{ inputs.version }})"
+            exit 1
+          fi
+
+      - name: Build (release)
+        run: cargo build --release --locked
+
+      - name: Run tests
+        run: cargo test --release --locked
+
+      - name: Package (dry-run publish)
+        run: cargo publish --dry-run --locked
+
+      - name: Publish to crates.io
+        run: cargo publish --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "### Published \`deepwash@${{ inputs.version }}\` to crates.io :package:" >> "$GITHUB_STEP_SUMMARY"
+          echo "https://crates.io/crates/deepwash/${{ inputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ inputs.add_latest }}" = "true" ]; then
+            echo "This version is now the latest release." >> "$GITHUB_STEP_SUMMARY"
+          fi
