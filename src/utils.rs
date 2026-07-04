@@ -32,14 +32,14 @@ pub fn clean_resource(label: &str, list_cmd: &str, remove_argv: &[&str]) -> usiz
     let listed = match run_cmd("sh", &["-c", list_cmd]) {
         Ok(out) => out,
         Err(e) => {
-            println!("⚠️  Failed to list {}: {}", label, e.trim());
+            println!("⚠️ Failed to list {}: {}", label, e.trim());
             return 0;
         }
     };
 
     let ids = parse_ids(&listed);
     if ids.is_empty() {
-        println!("⏭️  No {} to remove", label);
+        println!("⏭️ No {} to remove", label);
         return 0;
     }
 
@@ -48,11 +48,11 @@ pub fn clean_resource(label: &str, list_cmd: &str, remove_argv: &[&str]) -> usiz
     args.extend_from_slice(&ids);
     match run_cmd(cmd, &args) {
         Ok(_) => {
-            println!("✅  Removed {} {}", ids.len(), label);
+            println!("✅ Removed {} {}", ids.len(), label);
             ids.len()
         }
         Err(e) => {
-            println!("⚠️  Failed to remove {}: {}", label, e.trim());
+            println!("⚠️ Failed to remove {}: {}", label, e.trim());
             0
         }
     }
