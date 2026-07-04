@@ -20,7 +20,7 @@ cargo install deepwash
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Soluce-Technologies/deepwash.git
+   git clone https://github.com/SoluceTechnologies/deepwash.git
    cd deepwash
    ```
 

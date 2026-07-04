@@ -6,6 +6,7 @@ use clap::{CommandFactory, Parser};
 use cli::{Cli, Commands};
 use tasks::docker;
 
+
 fn main() {
     let cli = Cli::parse();
 
