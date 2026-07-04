@@ -20,6 +20,40 @@ pub fn resolve_scope(images: bool, volumes: bool, full: bool) -> (bool, bool) {
     }
 }
 
+/// Lists docker resources via `list_cmd`, then removes them with `remove_prefix`.
+/// Returns count removed. Empty list => skip cleanly (count 0, no error print).
+///
+/// `label` is a human plural, e.g. "containers".
+/// `list_cmd` is a full `sh -c` string, e.g. "docker ps -aq".
+/// `remove_prefix` is the removal command minus ids, e.g. "docker rm -f".
+pub fn clean_resource(label: &str, list_cmd: &str, remove_prefix: &str) -> usize {
+    let listed = match run_cmd("sh", &["-c", list_cmd]) {
+        Ok(out) => out,
+        Err(e) => {
+            println!("⚠️ Failed to list {}: {}", label, e.trim());
+            return 0;
+        }
+    };
+
+    let ids = parse_ids(&listed);
+    if ids.is_empty() {
+        println!("⏭️  No {} to remove", label);
+        return 0;
+    }
+
+    let remove_cmd = format!("{} {}", remove_prefix, ids.join(" "));
+    match run_cmd("sh", &["-c", &remove_cmd]) {
+        Ok(_) => {
+            println!("✅ Removed {} {}", ids.len(), label);
+            ids.len()
+        }
+        Err(e) => {
+            println!("⚠️ Failed to remove {}: {}", label, e.trim());
+            0
+        }
+    }
+}
+
 pub fn run_cmd(cmd: &str, args: &[&str]) -> Result<String, String> {
     let output = Command::new(cmd)
         .args(args)
