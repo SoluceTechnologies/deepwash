@@ -50,6 +50,10 @@
       }
     },
     "@release-it/bumper": {
+      "in": {
+        "file": "Cargo.toml",
+        "path": "package.version"
+      },
       "out": [
         {
           "file": "CITATION.cff",
