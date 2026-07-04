@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Deepwash, please cite it using the metadata from this file."
+title: "Deepwash"
+version: "1.0.0"
+type: software
+abstract: "A Command Line Interface to clean your machine, including Docker-related resources."
+authors:
+  - family-names: "Gauthereau"
+    given-names: "Charles"
+    email: "charles.gauthereau@soluce-technologies.com"
+    affiliation: "Soluce Technologies"
+license: "MIT"
+repository-code: "https://github.com/Soluce-Technologies/deepwash.git"
+url: "https://github.com/Soluce-Technologies/deepwash"
+keywords:
+  - cleaner
+  - docker
+  - linux
+  - macos
+date-released: "2026-07-04"
