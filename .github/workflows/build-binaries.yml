@@ -1,0 +1,60 @@
+name: Build release binaries
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version being released (e.g. 1.3.0)"
+        required: true
+        type: string
+      ref:
+        description: "Git ref (tag) to build from"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    name: macOS ${{ matrix.target }}
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Package tarball
+        run: |
+          BIN=target/${{ matrix.target }}/release/deepwash
+          strip "$BIN" || true
+          NAME=deepwash-${{ inputs.version }}-${{ matrix.target }}
+          mkdir -p "dist/$NAME"
+          cp "$BIN" "dist/$NAME/deepwash"
+          cp README.md LICENSE "dist/$NAME/"
+          tar -C dist -czf "dist/$NAME.tar.gz" "$NAME"
+          shasum -a 256 "dist/$NAME.tar.gz" | awk '{print $1}' > "dist/$NAME.tar.gz.sha256"
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ inputs.ref }}" \
+            dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz \
+            dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz.sha256 \
+            --clobber
