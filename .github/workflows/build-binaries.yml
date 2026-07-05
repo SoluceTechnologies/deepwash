@@ -102,7 +102,7 @@ jobs:
 
       - name: Build .deb
         run: |
-          cargo deb --no-build --target ${{ matrix.target }} --output dist/
+          cargo deb --no-build --no-strip --target ${{ matrix.target }} --output dist/
           ls -1 dist/*.deb
 
       - name: Smoke test binary
