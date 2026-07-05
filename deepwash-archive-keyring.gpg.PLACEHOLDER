@@ -1,0 +1,4 @@
+This file is a placeholder. The maintainer must replace it with the real
+exported apt signing public key, committed as `deepwash-archive-keyring.gpg`
+(without the .PLACEHOLDER suffix). See Task 0 of
+docs/superpowers/plans/2026-07-05-apt-brew-distribution.md.
