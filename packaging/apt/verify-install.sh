@@ -2,7 +2,7 @@
 # Smoke-tests the published apt repo inside a clean Debian container.
 # Usage: packaging/apt/verify-install.sh [BASE_URL]
 set -euo pipefail
-BASE_URL="${1:-https://soluce-technologies.github.io/deepwash}"
+BASE_URL="${1:-https://solucetechnologies.github.io/deepwash}"
 
 docker run --rm "debian:stable" bash -c "
   set -euo pipefail

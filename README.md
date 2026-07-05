@@ -4,8 +4,8 @@ A command-line interface (CLI) tool written in Rust to clean up Docker instances
 
 ## Install
 
-- **macOS (brew):** `brew install soluce-technologies/deepwash/deepwash`
-- **Debian/Ubuntu (apt):** see [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md)
+- **macOS (brew):** `brew install solucetechnologies/deepwash/deepwash`
+- **Debian/Ubuntu (apt):** see [DISTRIBUTION.md](DISTRIBUTION.md)
 - **cargo:** `cargo install deepwash`
 
 ## Installation
