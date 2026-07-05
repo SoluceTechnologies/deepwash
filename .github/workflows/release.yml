@@ -98,10 +98,42 @@ jobs:
       add_latest: true
     secrets: inherit
 
+  build-binaries:
+    needs: create-release
+    if: ${{ needs.create-release.result == 'success' }}
+    uses: ./.github/workflows/build-binaries.yml
+    with:
+      version: ${{ needs.create-release.outputs.version }}
+      ref: ${{ needs.create-release.outputs.draft_tag }}
+    secrets: inherit
+
+  publish-apt:
+    needs:
+      - create-release
+      - build-binaries
+    uses: ./.github/workflows/publish-apt.yml
+    with:
+      version: ${{ needs.create-release.outputs.version }}
+      ref: ${{ needs.create-release.outputs.draft_tag }}
+    secrets: inherit
+
+  update-brew:
+    needs:
+      - create-release
+      - build-binaries
+    uses: ./.github/workflows/update-brew.yml
+    with:
+      version: ${{ needs.create-release.outputs.version }}
+      ref: ${{ needs.create-release.outputs.draft_tag }}
+    secrets: inherit
+
   finalize-release:
     needs:
       - create-release
       - publish-crate-registry
+      - build-binaries
+      - publish-apt
+      - update-brew
     runs-on: ubuntu-latest
     outputs:
       release_tag: ${{ steps.publish_release_step.outputs.release_tag }}
