@@ -12,7 +12,9 @@ on:
         type: string
 
 permissions:
-  contents: read
+  # write (not read) so the GITHUB_TOKEN can see the still-draft release
+  # (untagged-*) to download its darwin tarballs. Read-only cannot see drafts.
+  contents: write
 
 jobs:
   update:
