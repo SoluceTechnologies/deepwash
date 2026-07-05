@@ -1,0 +1,67 @@
+name: Update Homebrew tap
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      ref:
+        description: "Release tag holding the darwin tarballs"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: SoluceTechnologies
+          repositories: homebrew-deepwash
+
+      - name: Checkout deepwash (for the template)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+          path: deepwash
+
+      - name: Download darwin tarballs + hash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.ref }}" \
+            --repo "${{ github.repository }}" \
+            --pattern 'deepwash-${{ inputs.version }}-*-apple-darwin.tar.gz' --dir dl
+          SHA_ARM64=$(sha256sum dl/deepwash-${{ inputs.version }}-aarch64-apple-darwin.tar.gz | awk '{print $1}')
+          SHA_X86=$(sha256sum dl/deepwash-${{ inputs.version }}-x86_64-apple-darwin.tar.gz | awk '{print $1}')
+          echo "SHA_ARM64=$SHA_ARM64" >> "$GITHUB_ENV"
+          echo "SHA_X86_64=$SHA_X86" >> "$GITHUB_ENV"
+
+      - name: Render formula
+        run: |
+          sed -e "s/__VERSION__/${{ inputs.version }}/g" \
+              -e "s/__SHA_ARM64__/${SHA_ARM64}/g" \
+              -e "s/__SHA_X86_64__/${SHA_X86_64}/g" \
+              deepwash/packaging/brew/deepwash.rb.tmpl > deepwash.rb
+          cat deepwash.rb
+
+      - name: Push to tap
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git clone "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/SoluceTechnologies/homebrew-deepwash.git" tap
+          mkdir -p tap/Formula
+          cp deepwash.rb tap/Formula/deepwash.rb
+          cd tap
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add Formula/deepwash.rb
+          git commit -m "deepwash ${{ inputs.version }}" || echo "no change"
+          git push origin HEAD
