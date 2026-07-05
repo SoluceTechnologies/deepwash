@@ -58,3 +58,65 @@ jobs:
             dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz \
             dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz.sha256 \
             --clobber
+
+  linux:
+    name: Linux ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            deb_arch: amd64
+          - target: aarch64-unknown-linux-gnu
+            deb_arch: arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install zig + cargo tools
+        run: |
+          pip install ziglang
+          cargo install cargo-zigbuild --locked
+          cargo install cargo-deb --locked
+
+      - name: Build
+        run: cargo zigbuild --release --locked --target ${{ matrix.target }}
+
+      - name: Package tarball
+        run: |
+          BIN=target/${{ matrix.target }}/release/deepwash
+          NAME=deepwash-${{ inputs.version }}-${{ matrix.target }}
+          mkdir -p "dist/$NAME"
+          cp "$BIN" "dist/$NAME/deepwash"
+          cp README.md LICENSE "dist/$NAME/"
+          tar -C dist -czf "dist/$NAME.tar.gz" "$NAME"
+          sha256sum "dist/$NAME.tar.gz" | awk '{print $1}' > "dist/$NAME.tar.gz.sha256"
+
+      - name: Build .deb
+        run: |
+          cargo deb --no-build --target ${{ matrix.target }} --output dist/
+          ls -1 dist/*.deb
+
+      - name: Smoke test binary
+        run: |
+          if [ "${{ matrix.deb_arch }}" = "amd64" ]; then
+            ./target/${{ matrix.target }}/release/deepwash --version
+          fi
+
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ inputs.ref }}" \
+            dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz \
+            dist/deepwash-${{ inputs.version }}-${{ matrix.target }}.tar.gz.sha256 \
+            dist/*_${{ matrix.deb_arch }}.deb \
+            --clobber
