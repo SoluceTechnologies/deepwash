@@ -21,3 +21,11 @@ path = "src/lib.rs"
 
 [dependencies]
 clap = { version = "4.6.1", features = ["derive"] }
+
+[package.metadata.deb]
+maintainer = "Charles Gauthereau <charles.gauthereau@soluce-technologies.com>"
+copyright = "2026, Soluce Technologies"
+license-file = ["LICENSE", "0"]
+section = "utils"
+priority = "optional"
+extended-description = "A Command Line Interface to clean your machine (docker...)."
