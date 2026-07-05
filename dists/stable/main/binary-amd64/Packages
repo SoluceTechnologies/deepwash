@@ -34,3 +34,21 @@ Homepage: https://github.com/SoluceTechnologies/deepwash
 Description: A Command Line Interface to clean your machine (docker...)
  A Command Line Interface to clean your machine (docker...).
 
+Package: deepwash
+Architecture: amd64
+Version: 1.3.1-1
+Priority: optional
+Section: utils
+Maintainer: Charles Gauthereau <charles.gauthereau@soluce-technologies.com>
+Installed-Size: 878
+Depends: libc6
+Filename: pool/main/deepwash_1.3.1-1_amd64.deb
+Size: 318728
+MD5sum: e23e6aef1ea23f8c1c553f788ff201e7
+SHA1: 5d4f33940b92e6f1aee1915547eb938e0c425b92
+SHA256: 76cee4f2814068318e09b14ad41e9bfbbc11263da727709582f3608b45f85c3f
+SHA512: 1712406826551cceaf56dae7f7580396926f085cd7fa5fe9704aea90e035763f17d96c2c6f38667f7f436e7ba7937d27e6b67eec5afdd71b52692db42dd1bf8b
+Homepage: https://github.com/SoluceTechnologies/deepwash
+Description: A Command Line Interface to clean your machine (docker...)
+ A Command Line Interface to clean your machine (docker...).
+
