@@ -1,0 +1,25 @@
+class Deepwash < Formula
+  desc "A Command Line Interface to clean your machine (docker...)"
+  homepage "https://github.com/Soluce-Technologies/deepwash"
+  version "__VERSION__"
+  license "MIT"
+
+  on_macos do
+    on_arm do
+      url "https://github.com/Soluce-Technologies/deepwash/releases/download/__VERSION__/deepwash-__VERSION__-aarch64-apple-darwin.tar.gz"
+      sha256 "__SHA_ARM64__"
+    end
+    on_intel do
+      url "https://github.com/Soluce-Technologies/deepwash/releases/download/__VERSION__/deepwash-__VERSION__-x86_64-apple-darwin.tar.gz"
+      sha256 "__SHA_X86_64__"
+    end
+  end
+
+  def install
+    bin.install "deepwash"
+  end
+
+  test do
+    system "#{bin}/deepwash", "--version"
+  end
+end
