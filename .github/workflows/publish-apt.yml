@@ -26,7 +26,7 @@ jobs:
       - name: Checkout main (for the public keyring source)
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.version }}
           path: source
 
       - name: Install tooling
