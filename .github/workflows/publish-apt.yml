@@ -1,0 +1,104 @@
+name: Publish apt repo
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      ref:
+        description: "Release tag holding the .deb assets"
+        required: true
+        type: string
+    secrets:
+      APT_GPG_PRIVATE_KEY:
+        required: true
+      APT_GPG_PASSPHRASE:
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (for the public keyring source)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          path: source
+
+      - name: Install tooling
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq apt-utils gnupg
+
+      - name: Import signing key
+        run: |
+          echo "${{ secrets.APT_GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+          KEYID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+          echo "GPG_KEYID=$KEYID" >> "$GITHUB_ENV"
+
+      - name: Download .deb assets from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p incoming
+          gh release download "${{ inputs.ref }}" \
+            --repo "${{ github.repository }}" \
+            --pattern '*.deb' --dir incoming
+          ls -1 incoming/*.deb
+
+      - name: Checkout gh-pages (create if missing)
+        run: |
+          git clone --branch gh-pages --single-branch \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pages \
+            || (git clone "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pages \
+                && cd pages && git checkout --orphan gh-pages && git rm -rf . >/dev/null 2>&1 || true)
+
+      - name: Assemble pool + metadata
+        run: |
+          cd pages
+          mkdir -p pool/main dists/stable/main/binary-amd64 dists/stable/main/binary-arm64
+          cp ../incoming/*.deb pool/main/
+
+          for arch in amd64 arm64; do
+            apt-ftparchive --arch "$arch" packages pool/ \
+              > "dists/stable/main/binary-$arch/Packages"
+            gzip -9c "dists/stable/main/binary-$arch/Packages" \
+              > "dists/stable/main/binary-$arch/Packages.gz"
+          done
+
+          apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin="deepwash" \
+            -o APT::FTPArchive::Release::Label="deepwash" \
+            -o APT::FTPArchive::Release::Suite="stable" \
+            -o APT::FTPArchive::Release::Codename="stable" \
+            -o APT::FTPArchive::Release::Components="main" \
+            -o APT::FTPArchive::Release::Architectures="amd64 arm64" \
+            release dists/stable > dists/stable/Release
+
+      - name: Sign Release
+        env:
+          PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: |
+          cd pages
+          GPG_OPTS=(--batch --yes --pinentry-mode loopback)
+          if [ -n "${PASSPHRASE:-}" ]; then GPG_OPTS+=(--passphrase "$PASSPHRASE"); fi
+          gpg "${GPG_OPTS[@]}" --clearsign -o dists/stable/InRelease dists/stable/Release
+          gpg "${GPG_OPTS[@]}" -abs -o dists/stable/Release.gpg dists/stable/Release
+
+      - name: Publish keyring + disable Jekyll
+        run: |
+          cd pages
+          cp ../source/deepwash-archive-keyring.gpg ./deepwash-archive-keyring.gpg
+          touch .nojekyll
+
+      - name: Commit + push gh-pages
+        run: |
+          cd pages
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m "apt: publish deepwash ${{ inputs.version }}" || echo "nothing to commit"
+          git push origin gh-pages
