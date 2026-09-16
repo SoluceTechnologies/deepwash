@@ -1,4 +1,4 @@
-use deepwash::tasks::clean::{filter_sort, total_size, Match};
+use deepwash::tasks::clean::{filter_sort, Match};
 use std::path::PathBuf;
 
 fn m(size: u64, kind: &str) -> Match {
@@ -18,9 +18,4 @@ fn filter_sort_no_min_keeps_all() {
     let out = filter_sort(vec![m(1, "a"), m(2, "b")], None);
     assert_eq!(out.len(), 2);
     assert_eq!(out[0].size, 2);
-}
-
-#[test]
-fn total_size_sums() {
-    assert_eq!(total_size(&[m(10, "a"), m(32, "b")]), 42);
 }

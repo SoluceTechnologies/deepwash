@@ -9,10 +9,6 @@ pub fn filter_sort(mut matches: Vec<Match>, min_size: Option<u64>) -> Vec<Match>
     matches
 }
 
-pub fn total_size(matches: &[Match]) -> u64 {
-    matches.iter().map(|m| m.size).sum()
-}
-
 pub fn print_report(matches: &[Match]) {
     if matches.is_empty() {
         println!("⏭️ No matching folders found");
