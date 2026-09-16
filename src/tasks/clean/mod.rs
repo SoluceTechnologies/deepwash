@@ -42,7 +42,10 @@ fn remove_match(path: &Path, empty_contents: bool, size: u64) -> Result<u64, Str
                     match entry {
                         Ok(entry) => {
                             let p = entry.path();
-                            let r = if p.is_dir() {
+                            let is_symlink = p.symlink_metadata().map(|m| m.file_type().is_symlink()).unwrap_or(false);
+                            let r = if is_symlink {
+                                fs::remove_file(&p) // unlink the symlink itself, never traverse it
+                            } else if p.is_dir() {
                                 fs::remove_dir_all(&p)
                             } else {
                                 fs::remove_file(&p)
@@ -89,6 +92,9 @@ pub fn run(opts: CleanOpts) {
             all.push((st.path, size, "system".to_string(), st.empty_contents));
         }
     }
+
+    let mut seen = std::collections::HashSet::new();
+    all.retain(|(p, _, _, _)| seen.insert(p.clone()));
 
     let total: u64 = all.iter().map(|(_, s, _, _)| s).sum();
     println!("📋 {} items, {} reclaimable", all.len(), format_size(total));
