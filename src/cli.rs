@@ -27,20 +27,21 @@ pub enum Commands {
         full: bool,
     },
     /// Find and prune large build/cache artifacts (dry-run by default)
+    #[command(visible_alias = "c")]
     Clean {
-        /// Directory to scan for project artifacts (node_modules, target, ...)
+        /// Directory to scan for project artifacts (defaults to current dir)
         path: Option<PathBuf>,
         /// Actually delete (default is a dry-run report)
-        #[arg(long)]
+        #[arg(short = 'e', long)]
         execute: bool,
         /// Only report matches at least this big, e.g. 1G, 500M
-        #[arg(long = "min-size")]
+        #[arg(short = 'm', long = "min-size")]
         min_size: Option<String>,
         /// Also prune system trash and ~/.cache
-        #[arg(long)]
+        #[arg(short = 's', long)]
         system: bool,
         /// Extra directory names to treat as artifacts (repeatable)
-        #[arg(long = "name")]
+        #[arg(short = 'n', long = "name")]
         name: Vec<String>,
     },
 }
