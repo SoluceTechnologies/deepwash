@@ -8,7 +8,7 @@ docker run --rm "debian:stable" bash -c "
   set -euo pipefail
   apt-get update -qq && apt-get install -y -qq curl gnupg ca-certificates >/dev/null
   curl -fsSL '${BASE_URL}/deepwash-archive-keyring.gpg' -o /usr/share/keyrings/deepwash.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/deepwash.gpg] ${BASE_URL} stable main' \
+  echo 'deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/deepwash.gpg] ${BASE_URL} stable main' \
     > /etc/apt/sources.list.d/deepwash.list
   apt-get update -qq
   apt-get install -y -qq deepwash
