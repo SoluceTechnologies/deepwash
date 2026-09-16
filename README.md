@@ -44,3 +44,23 @@ Run `deepwash` to clean up your environment. Below are the available commands an
 deepwash --help
 ```
 
+### Clean build/cache artifacts
+
+Scan a directory for large build/cache folders and report reclaimable space
+(dry-run by default):
+
+```bash
+deepwash clean ~/projects
+```
+
+Filter the report to big folders only, then delete for real:
+
+```bash
+deepwash clean ~/projects --min-size 1G
+deepwash clean ~/projects --execute
+```
+
+Prunes by default: `node_modules`, `.next`, `target`, `dist`, `build`,
+`.cache`, `__pycache__`, `.venv`, `.turbo`, `.gradle`. Add more with
+`--name`. Prune system trash and `~/.cache` with `--system`.
+
