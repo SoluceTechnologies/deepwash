@@ -74,3 +74,45 @@ pub fn wait_for_docker_ready(timeout_secs: u64) -> bool {
     }
     false
 }
+
+pub fn parse_size(s: &str) -> Result<u64, String> {
+    let s = s.trim();
+    if s.is_empty() {
+        return Err("empty size".to_string());
+    }
+    let last = s.chars().last().unwrap();
+    let (num_part, mult) = match last.to_ascii_uppercase() {
+        'K' => (&s[..s.len() - 1], 1_000_f64),
+        'M' => (&s[..s.len() - 1], 1_000_000_f64),
+        'G' => (&s[..s.len() - 1], 1_000_000_000_f64),
+        'T' => (&s[..s.len() - 1], 1_000_000_000_000_f64),
+        c if c.is_ascii_digit() => (s, 1_f64),
+        _ => return Err(format!("invalid size suffix in '{}'", s)),
+    };
+    let value: f64 = num_part
+        .parse()
+        .map_err(|_| format!("invalid size number in '{}'", s))?;
+    if value < 0.0 {
+        return Err(format!("negative size '{}'", s));
+    }
+    Ok((value * mult) as u64)
+}
+
+pub fn format_size(bytes: u64) -> String {
+    const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+    let mut value = bytes as f64;
+    let mut unit = 0;
+    while value >= 1000.0 && unit < UNITS.len() - 1 {
+        value /= 1000.0;
+        unit += 1;
+    }
+    if unit == 0 {
+        format!("{} {}", bytes, UNITS[unit])
+    } else if value >= 100.0 {
+        format!("{:.0} {}", value, UNITS[unit])
+    } else {
+        let s = format!("{:.1}", value);
+        let s = s.strip_suffix(".0").unwrap_or(&s).to_string();
+        format!("{} {}", s, UNITS[unit])
+    }
+}
