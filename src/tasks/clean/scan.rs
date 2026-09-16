@@ -2,14 +2,12 @@ use crate::tasks::clean::is_target;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// A matched artifact directory.
 pub struct Match {
     pub path: PathBuf,
     pub size: u64,
     pub kind: String,
 }
 
-/// Recursive byte total of a directory. Skips symlinks; tolerates errors.
 pub fn dir_size(path: &Path) -> u64 {
     let mut total = 0;
     let entries = match fs::read_dir(path) {
@@ -33,7 +31,6 @@ pub fn dir_size(path: &Path) -> u64 {
     total
 }
 
-/// Walk `root`, recording target directories without descending into them.
 pub fn scan(root: &Path, names: &[String]) -> Vec<Match> {
     let mut matches = Vec::new();
     walk(root, names, &mut matches);
@@ -43,7 +40,7 @@ pub fn scan(root: &Path, names: &[String]) -> Vec<Match> {
 fn walk(dir: &Path, names: &[String], matches: &mut Vec<Match>) {
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,
-        Err(_) => return, // unreadable dir: skip silently
+        Err(_) => return,
     };
     for entry in entries.flatten() {
         let path = entry.path();
@@ -64,7 +61,6 @@ fn walk(dir: &Path, names: &[String], matches: &mut Vec<Match>) {
                 kind: name,
                 path,
             });
-            // prune: do not descend
         } else {
             walk(&path, names, matches);
         }

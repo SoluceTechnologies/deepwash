@@ -75,8 +75,6 @@ pub fn wait_for_docker_ready(timeout_secs: u64) -> bool {
     false
 }
 
-/// Parse a human size like "1G", "2.5G", "500M", or "1024" (bare = bytes).
-/// Suffixes are case-insensitive powers of 1000: K, M, G, T.
 pub fn parse_size(s: &str) -> Result<u64, String> {
     let s = s.trim();
     if s.is_empty() {
@@ -100,7 +98,6 @@ pub fn parse_size(s: &str) -> Result<u64, String> {
     Ok((value * mult) as u64)
 }
 
-/// Format a byte count as a human-readable string (powers of 1000).
 pub fn format_size(bytes: u64) -> String {
     const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
     let mut value = bytes as f64;
@@ -114,7 +111,6 @@ pub fn format_size(bytes: u64) -> String {
     } else if value >= 100.0 {
         format!("{:.0} {}", value, UNITS[unit])
     } else {
-        // trim trailing .0
         let s = format!("{:.1}", value);
         let s = s.strip_suffix(".0").unwrap_or(&s).to_string();
         format!("{} {}", s, UNITS[unit])

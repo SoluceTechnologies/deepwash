@@ -18,7 +18,6 @@ pub struct CleanOpts {
     pub names: Vec<String>,
 }
 
-/// True if `p` equals `/`, `home`, or the scan root itself (top-level guard).
 pub fn is_refused_path(p: &Path, home: &Path, scan_root: Option<&Path>) -> bool {
     p == Path::new("/")
         || p == home
@@ -31,8 +30,6 @@ fn home_dir() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("/"))
 }
 
-/// Remove a match: whole dir, or (for system targets) its contents only.
-/// Returns freed bytes on success.
 fn remove_match(path: &Path, empty_contents: bool, size: u64) -> Result<u64, String> {
     let result = if empty_contents {
         let mut ok = true;
@@ -71,7 +68,6 @@ pub fn run(opts: CleanOpts) {
     let home = home_dir();
     let mut all: Vec<(PathBuf, u64, String, bool)> = Vec::new(); // path,size,kind,empty_contents
 
-    // Project artifacts under PATH
     let scan_root: Option<PathBuf> = opts.path.clone();
     if let Some(ref root) = scan_root {
         println!("🧹 Scanning {} ...", root.display());
@@ -83,7 +79,6 @@ pub fn run(opts: CleanOpts) {
         }
     }
 
-    // System targets
     if opts.system {
         println!("🧹 Scanning system targets ...");
         for st in system_targets(&home, std::env::consts::OS) {
