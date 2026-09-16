@@ -8,7 +8,7 @@
 
     curl -fsSL https://solucetechnologies.github.io/deepwash/deepwash-archive-keyring.gpg \
       | sudo tee /usr/share/keyrings/deepwash.gpg >/dev/null
-    echo "deb [signed-by=/usr/share/keyrings/deepwash.gpg] https://solucetechnologies.github.io/deepwash stable main" \
+    echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/deepwash.gpg] https://solucetechnologies.github.io/deepwash stable main" \
       | sudo tee /etc/apt/sources.list.d/deepwash.list
     sudo apt update && sudo apt install deepwash
 
