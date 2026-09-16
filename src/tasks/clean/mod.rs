@@ -36,18 +36,26 @@ fn home_dir() -> PathBuf {
 fn remove_match(path: &Path, empty_contents: bool, size: u64) -> Result<u64, String> {
     let result = if empty_contents {
         let mut ok = true;
-        if let Ok(entries) = fs::read_dir(path) {
-            for entry in entries.flatten() {
-                let p = entry.path();
-                let r = if p.is_dir() {
-                    fs::remove_dir_all(&p)
-                } else {
-                    fs::remove_file(&p)
-                };
-                if r.is_err() {
-                    ok = false;
+        match fs::read_dir(path) {
+            Ok(entries) => {
+                for entry in entries {
+                    match entry {
+                        Ok(entry) => {
+                            let p = entry.path();
+                            let r = if p.is_dir() {
+                                fs::remove_dir_all(&p)
+                            } else {
+                                fs::remove_file(&p)
+                            };
+                            if r.is_err() {
+                                ok = false;
+                            }
+                        }
+                        Err(_) => ok = false,
+                    }
                 }
             }
+            Err(e) => return Err(e.to_string()),
         }
         if ok { Ok(()) } else { Err("some entries could not be removed".to_string()) }
     } else {
